@@ -10,7 +10,7 @@ input double   Lot=0.1;
 int handle; 
 double upper[],mid[],lower[]; 
 int STP, TKP;  
-double upperVal,lowerVal;
+double upperVal,lowerVal,bandwidth;
 
 int OnInit()
   {
@@ -38,7 +38,7 @@ void OnDeinit(const int reason)
    IndicatorRelease(handle);
   }
   
-void func(double &upperVal, double &lowerVal)
+void func(double &upperVal,&lowerVal,&bandwidth)
    { 
      ArraySetAsSeries(mid,true);
      ArraySetAsSeries(upper,true);
@@ -49,8 +49,9 @@ void func(double &upperVal, double &lowerVal)
      CopyBuffer(handle,2,0,3,lower);
      
      //double midVal = mid[0];
-     upperVal = upper[0];
-     lowerVal = lower[0];
+     upperVal = NormalizeDouble(upper[0],5);
+     lowerVal = NormalizeDouble(lower[0],5);
+     bandwidth = upperVal-lowerVal;
    }
    
    
@@ -71,7 +72,7 @@ void OnTick()
      {
       if(Old_Time!=New_Time[0])
         {
-         func(upperVal, lowerVal);
+         func(upperVal, lowerVal, bandwidth);
        
          IsNewBar=true;  
          
@@ -131,8 +132,9 @@ void OnTick()
      }
   
    bool Buy_Condition_1=(bidValue < lowerVal); 
+   bool Buy_Condition_2=(bandwidth > 0.0030);
 
-   if(Buy_Condition_1)
+   if(Buy_Condition_1 && Buy_Condition_2)
      {
       if(Buy_opened)
         {
@@ -167,8 +169,9 @@ void OnTick()
      }
 
    bool Sell_Condition_1 = (askValue > upperVal); 
+   bool Sell_Condition_2 = (bandwidth > 0.0030);
 
-   if(Sell_Condition_1)
+   if(Sell_Condition_1 && Sell_Condition_2)
      {
       if(Sell_opened)
         {
